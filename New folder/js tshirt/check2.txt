@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./img.css" />
+</head>
+<body>
+    <div class="image" style="align-items: center; justify-content: center; position:relative; display:flex; top:18vh;">
+        <img src="3.png" id="propic">
+    </div>
+    <div class="browse">
+        <label for="input-file">Update image</label>
+        <input type="file" accept="image/png, image/jpg, image/jpeg" id="input-file">
+    </div>
+
+    <!--<script>
+        let profilepic = document.getElementById("propic");
+        let inputfile = document.getElementById("input-file");
+        inputfile.onchange = function(){
+            profilepic.src = URL.createObjectURL(inputfile.files[0]);
+        }
+    </script>-->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script>
+        // Function to handle mouse wheel event for image resizing
+        function handleMouseWheel(event) {
+            const delta = Math.max(-1, Math.min(1, (event.deltaY || -event.wheelDelta || event.detail)));
+            const scaleFactor = 0.1; // Change this value as needed
+
+            // Increase or decrease image size based on the scroll direction
+            const image = document.getElementById('propic');
+            const newWidth = image.clientWidth * (1 + scaleFactor * delta);
+            const newHeight = image.clientHeight * (1 + scaleFactor * delta);
+
+            // Update image size
+            image.style.width = `${newWidth}px`;
+            image.style.height = `${newHeight}px`;
+
+            // Prevent default scrolling behavior
+            event.preventDefault();
+        }
+
+        // Add event listener for mouse wheel event on image
+        const image = document.getElementById('propic');
+        image.addEventListener('wheel', handleMouseWheel);
+    </script>
+    <script>
+         $(function() {
+            $(".image img").draggable({ containment: ".image" });
+        });
+        document.getElementById('input-file').addEventListener('change', function() {
+            let input = this;
+            if (input.files && input.files[0]) {
+                let file = input.files[0];
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let img = new Image();
+                    img.onload = function() {
+                        const maxWidth = 180; // Change this value to the desired maximum width
+                        const maxHeight = 180; // Change this value to the desired maximum height
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Calculate new dimensions while maintaining aspect ratio
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height *= maxWidth / width;
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width *= maxHeight / height;
+                                height = maxHeight;
+                            }
+                        }
+
+                        let canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        let ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        document.getElementById('propic').src = canvas.toDataURL('image/png');
+                        //document.getElementById('propic').style.display = 'block';
+                    };
+                    img.src = e.target.result;
+                };  
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+
+<!--<script>
+    document.getElementById('input-file').addEventListener('change', function() {
+        let input = this;
+        if (input.files && input.files[0]) {
+            let file = input.files[0];
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('propic').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>-->
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slider Sandbox</title>
+    <style>
+        body{
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 100vh;
+            background-color: black;
+            overflow: hidden;
+            margin: 0; /* Remove default body margin */
+        }
+
+        .slide-container {
+            width: 80%; /* Adjust width as needed */
+            height: 85vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            background-color: rgb(110, 110, 250);
+            margin-left: auto; /* Move to the right side of the page */
+            margin-right: 0; /* Remove default margin */
+            position: relative; /* Added to contain the slider */
+        }
+
+        .image-slider{
+            width: 300%; /* Adjust based on the number of slides */
+            height: 600px;
+            position: relative; /* Changed from absolute */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 1s;
+            left: 0; /* Initial left position */
+        }
+        
+        .slides-div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 30px;
+        }
+
+        .img{
+            position: relative;
+            width: 240px;
+            height: 370px;
+            transition: 0.5s;
+        }
+
+        .button {
+            position: absolute;
+            width: 240px;
+            height: 370px;
+            transition: 0.5s;
+            background-color: rgba(67, 67, 151, 0.2);
+        }
+
+        #slider-span1:target ~ .image-slider #img1,
+        #slider-span1:target ~.image-slider #button-1{
+            width:380px;
+            height: 585px;
+            background-color: transparent;
+        }
+        #slider-span2:target ~ .image-slider #img2,
+        #slider-span2:target ~.image-slider #button-2{
+            width:380px;
+            height: 585px;
+            background-color: transparent;
+        }
+        #slider-span3:target ~ .image-slider #img3,
+        #slider-span3:target ~.image-slider #button-3{
+            width:380px;
+            height: 585px;
+            background-color: transparent;
+        }
+
+        #slider-span1:target ~.image-slider{
+            left: 0; /* Adjusted for better centering */
+        }
+        #slider-span2:target ~.image-slider{
+            left: -33.33%; /* Adjusted for better centering */
+        }
+        #slider-span3:target ~.image-slider{
+            left: -66.66%; /* Adjusted for better centering */
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <span class="slider-span" id="slider-span1"></span>
+        <span class="slider-span" id="slider-span2"></span>
+        <span class="slider-span" id="slider-span3"></span>
+
+        <div class="image-slider">
+            <div class="slides-div" id="slide-1">
+                <img src="sk2.png" alt="" class="img" id="img1">
+                <a href="#slider-span1" class="button" id="button-1"></a>
+            </div>
+            <div class="slides-div" id="slide-2">
+                <img src="sk2.png" alt="" class="img" id="img2">
+                <a href="#slider-span2" class="button" id="button-2"></a>
+            </div>
+            <div class="slides-div" id="slide-3">
+                <img src="sk2.png" alt="" class="img" id="img3">
+                <a href="#slider-span3" class="button" id="button-3"></a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 3;
+        let manualChange = false;
+
+        const changeSlide = () => {
+            if (!manualChange) {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                document.querySelector(`#slider-span${currentSlide + 1}`).scrollIntoView({ behavior: "smooth" });
+            }
+            manualChange = false;
+        };
+
+        setInterval(changeSlide, 5000); // Change slide every 5 seconds
+
+        // Add event listeners to buttons for manual change
+        document.querySelectorAll('.button').forEach((button, index) => {
+            button.addEventListener('click', () => {
+                manualChange = true;
+                currentSlide = index;
+            });
+        });
+    </script>
+</body>
+</html>

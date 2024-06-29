@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draggable, Resizable, and Rotatable Images on Canvas</title>
+	
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        canvas {	
+            border: 1px solid #000;
+            background: transparent;
+            width: 30vh; /* Adjusted canvas width */
+            height: 50vh; /* Adjusted canvas height */
+            z-index: 4;
+            position: absolute;
+            left: 32.8vh;
+            top: 25vh;
+			border: 1px dashed;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+			margin:12px;
+			padding:10px;
+			position:absolute;
+			left:55vh;
+			top: 50vh;
+        }
+		label{
+			display: block;
+			width: 200px;
+			background:#e3362c;
+			color:#fff;
+			padding:12px;
+			margin:8px;
+			border-radius: 5px;
+			position: absolute;
+			left:35vh;
+            text-align: center;
+			align-content: center;
+			justify-content: center;
+			cursor:pointer;
+			place-items: center;
+            width:18vh;
+		}
+		input[type="file"] {
+				display: none; /* Hide the file input */
+                position:absolute;
+                left:33vh;
+			}
+		
+		.color{
+			background: white; 
+			position:absolute; 
+			top:0; 
+			left:0; 
+			width:100%; 
+			height: 100%; 
+			z-index:1; 
+			mix-blend-mode: multiply;
+		}
+
+		.color-input{
+			background: #fff; 
+			border: 1px #ccc solid; 
+			border-radius: 4px; 
+			padding:0.3em;
+		}
+	
+    </style>
+</head>
+<body>
+	<div class="browse" style="position:absolute;">
+		<label for="imageLoader">Upload image</label>
+		<input type="file" id="imageLoader" accept="image/*" class="hehe">
+	</div>
+    
+	<div class ="product" style="top:1vh; left:2vh; position:absolute; box-shadow: 0 0 2em rgba(0,0,0,0.2); border-radius: 1em; overflow:hidden; width:45%; height:93%;">    <canvas id="canvas" width="250" height="350"></canvas>
+		<img src="p1.png" class="img1" style="width:100%; z-index:0; "/>
+        <img src ="p4.png" class="img2" style="position:absolute; top: 0; left:0; width:100%; z-index: 2;"/>
+        <div class="color"></div>
+	</div>
+	
+	 <div class="change" style="position:absolute; left:105vh">
+        <h1>Jack &amp; Jones T-shirt</h1>
+        <p>Tshirt project</p>
+        <b>Customize Tshirt Color: </b>
+        <input
+            type="color"
+            class="color-input"
+            value="#ff0000"
+        />
+    </div>
+	
+	<script src="tcolor.js"></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const imageLoader = document.getElementById('imageLoader');
+        const images = [];
+
+        canvas.width = 195; // Original canvas width
+        canvas.height = 295; // Original canvas height
+        let selectedImage = null;
+
+        class DraggableImage {
+            constructor(img, x, y, width, height) {
+                this.img = img;
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.aspectRatio = img.width / img.height; // Store the aspect ratio
+                this.dragging = false;
+                this.offsetX = 0;
+                this.offsetY = 0;
+                this.rotation = 0; // Initial rotation angle in radians
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x + this.width / 2, this.y + this.height / 2); // Move to center of the image
+                ctx.rotate(this.rotation); // Rotate the image
+                ctx.drawImage(this.img, -this.width / 2, -this.height / 2, this.width, this.height);
+                ctx.restore();
+                if (this === selectedImage) {
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(this.x, this.y, this.width, this.height);
+                }
+            }
+
+            contains(mx, my) {
+                // Account for rotation when checking if point is inside image
+                ctx.save();
+                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                ctx.rotate(this.rotation);
+                ctx.translate(-this.width / 2, -this.height / 2);
+                const isContained = (mx >= this.x && mx <= this.x + this.width && my >= this.y && my <= this.y + this.height);
+                ctx.restore();
+                return isContained;
+            }
+
+            startDragging(mx, my) {
+                if (this.contains(mx, my)) {
+                    this.dragging = true;
+                    this.offsetX = mx - this.x;
+                    this.offsetY = my - this.y;
+                    return true;
+                }
+                return false;
+            }
+
+            drag(mx, my) {
+                if (this.dragging) {
+                    this.x = mx - this.offsetX;
+                    this.y = my - this.offsetY;
+                }
+            }
+
+            stopDragging() {
+                this.dragging = false;
+            }
+
+            resize(delta) {
+                const newWidth = this.width + delta;
+                const newHeight = newWidth / this.aspectRatio;
+                if (newWidth > 0 && newHeight > 0) {
+                    this.width = newWidth;
+                    this.height = newHeight;
+                }
+            }
+
+            rotate(delta) {
+                this.rotation += delta;
+            }
+        }
+
+        imageLoader.addEventListener('change', handleImage, false);
+
+        function handleImage(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // Calculate scaled dimensions to fit within canvas
+                    const scaleFactor = Math.min(canvas.width / img.width, canvas.height / img.height);
+                    const width = img.width * scaleFactor;
+                    const height = img.height * scaleFactor;
+                    images.push(new DraggableImage(img, 50, 50, width, height));
+                    draw();
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            images.forEach(img => img.draw());
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const mx = e.offsetX;
+            const my = e.offsetY;
+            selectedImage = null;
+            images.forEach(img => {
+                if (img.startDragging(mx, my)) {
+                    selectedImage = img;
+                    canvas.addEventListener('mousemove', onMouseMove, false);
+                    canvas.addEventListener('mouseup', onMouseUp, false);
+                }
+            });
+            draw();
+        });
+
+        function onMouseMove(e) {
+            const mx = e.offsetX;
+            const my = e.offsetY;
+            images.forEach(img => img.drag(mx, my));
+            draw();
+        }
+
+        function onMouseUp() {
+            images.forEach(img => img.stopDragging());
+            canvas.removeEventListener('mousemove', onMouseMove, false);
+            canvas.removeEventListener('mouseup', onMouseUp, false);
+        }
+
+        canvas.addEventListener('wheel', (e) => {
+            const mx = e.offsetX;
+            const my = e.offsetY;
+            images.forEach(img => {
+                if (img.contains(mx, my)) {
+                    const delta = e.deltaY > 0 ? -10 : 10;
+                    img.resize(delta);
+                    draw();
+                }
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (selectedImage) {
+                if (e.key === 'Delete') {
+                    const index = images.indexOf(selectedImage);
+                    if (index > -1) {
+                        images.splice(index, 1);
+                        selectedImage = null;
+                        draw();
+                    }
+                } else if (e.key === 'ArrowLeft') {
+                    selectedImage.rotate(-0.05); // Rotate left
+                    draw();
+                } else if (e.key === 'ArrowRight') {
+                    selectedImage.rotate(0.05); // Rotate right
+                    draw();
+                }
+            }
+        });
+    </script>
+	
+</body>
+</html>

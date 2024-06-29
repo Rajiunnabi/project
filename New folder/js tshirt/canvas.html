@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draggable and Resizable Images on Canvas</title>
+	
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        canvas {	
+            border: 1px solid #000;
+            background: transparent;
+            width: 195px; /* Adjusted canvas width */
+            height: 295px; /* Adjusted canvas height */
+            z-index: 4;
+            position: absolute;
+            left: 31.3vh;
+            top: 25vh;
+			border: 1px dashed;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+			margin:12px;
+			padding:10px;
+			position:absolute;
+			left:55vh;
+			top: 50vh;
+        }
+		label{
+			display: block;
+			width: 200px;
+			background:#e3362c;
+			color:#fff;
+			padding:12px;
+			margin:8px;
+			border-radius: 5px;
+			position: absolute;
+			left:35vh;
+            text-align: center;
+			align-content: center;
+			justify-content: center;
+			cursor:pointer;
+			place-items: center;
+            width:18vh;
+		}
+		input[type="file"] {
+				display: none; /* Hide the file input */
+                position:absolute;
+                left:33vh;
+			}
+		
+		.color{
+			background: white; 
+			position:absolute; 
+			top:0; 
+			left:0; 
+			width:100%; 
+			height: 100%; 
+			z-index:1; 
+			mix-blend-mode: multiply;
+		}
+
+		.color-input{
+			background: #fff; 
+			border: 1px #ccc solid; 
+			border-radius: 4px; 
+			padding:0.3em;
+		}
+	
+    </style>
+</head>
+<body>
+	<div class="browse" style="position:absolute;">
+		<label for="imageLoader">Update image</label>
+		<input type="file" id="imageLoader" accept="image/*" class="hehe">
+	</div>
+    
+	<div class ="product" style="top:1vh; left:2vh; position:absolute; box-shadow: 0 0 2em rgba(0,0,0,0.2); border-radius: 1em; overflow:hidden; width:35em;">
+        <canvas id="canvas" width="250" height="350"></canvas>
+		<img src="p1.png" class="img1" style="width:100%; z-index:0; "/>
+        <img src ="p4.png" class="img2" style="position:absolute; top: 0; left:0; width:100%; z-index: 2;"/>
+        <!--<div class="image" style="left:195px; align-items: center; justify-content: center; position:absolute; display:flex; top:25vh; z-index: 2;">
+            <img src="4.png" id="propic">
+        </div>-->
+
+        <div class="color"></div>
+	</div>
+	
+	 <div class="change" style="position:absolute; left:105vh">
+        <h1>Jack &amp; Jones T-shirt</h1>
+        <p>gugu gaga</p>
+        <b>Customize Tshirt Color: </b>
+        <input
+            type="color"
+            class="color-input"
+            value="#ff0000"
+        />
+    </div>
+	
+	<script src="tcolor.js"></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const imageLoader = document.getElementById('imageLoader');
+        const images = [];
+
+        canvas.width = 250; // Original canvas width
+        canvas.height = 350; // Original canvas height
+        let selectedImage = null;
+
+        class DraggableImage {
+            constructor(img, x, y, width, height) {
+                this.img = img;
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.aspectRatio = img.width / img.height; // Store the aspect ratio
+                this.dragging = false;
+                this.hovering = false;
+            }
+
+            draw() {
+                ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+                if (this === selectedImage) {
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(this.x, this.y, this.width, this.height);
+                }
+            }
+
+            contains(mx, my) {
+                return (this.x <= mx) && (this.x + this.width >= mx) &&
+                       (this.y <= my) && (this.y + this.height >= my);
+            }
+
+            startDragging(mx, my) {
+                if (this.contains(mx, my)) {
+                    this.dragging = true;
+                    this.offsetX = mx - this.x;
+                    this.offsetY = my - this.y;
+                    return true;
+                }
+                return false;
+            }
+
+            drag(mx, my) {
+                if (this.dragging) {
+                    this.x = mx - this.offsetX;
+                    this.y = my - this.offsetY;
+                }
+            }
+
+            stopDragging() {
+                this.dragging = false;
+            }
+
+            resize(delta) {
+                const newWidth = this.width + delta;
+                const newHeight = newWidth / this.aspectRatio;
+                if (newWidth > 0 && newHeight > 0) {
+                    this.width = newWidth;
+                    this.height = newHeight;
+                }
+            }
+        }
+
+        imageLoader.addEventListener('change', handleImage, false);
+
+        function handleImage(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // Calculate scaled dimensions to fit within canvas
+                    const scaleFactor = Math.min(canvas.width / img.width, canvas.height / img.height);
+                    const width = img.width * scaleFactor;
+                    const height = img.height * scaleFactor;
+                    images.push(new DraggableImage(img, 50, 50, width, height));
+                    draw();
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            images.forEach(img => img.draw());
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const mx = e.offsetX;
+            const my = e.offsetY;
+            selectedImage = null;
+            images.forEach(img => {
+                if (img.startDragging(mx, my)) {
+                    selectedImage = img;
+                    canvas.addEventListener('mousemove', onMouseMove, false);
+                    canvas.addEventListener('mouseup', onMouseUp, false);
+                }
+            });
+            draw();
+        });
+
+        function onMouseMove(e) {
+            const mx = e.offsetX;
+            const my = e.offsetY;
+            images.forEach(img => img.drag(mx, my));
+            draw();
+        }
+
+        function onMouseUp() {
+            images.forEach(img => img.stopDragging());
+            canvas.removeEventListener('mousemove', onMouseMove, false);
+            canvas.removeEventListener('mouseup', onMouseUp, false);
+        }
+
+        canvas.addEventListener('wheel', (e) => {
+            const mx = e.offsetX;
+            const my = e.offsetY;
+            images.forEach(img => {
+                if (img.contains(mx, my)) {
+                    const delta = e.deltaY > 0 ? -10 : 10;
+                    img.resize(delta);
+                    draw();
+                }
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete' && selectedImage) {
+                const index = images.indexOf(selectedImage);
+                if (index > -1) {
+                    images.splice(index, 1);
+                    selectedImage = null;
+                    draw();
+                }
+            }
+        });
+    </script>
+	
+</body>
+</html>

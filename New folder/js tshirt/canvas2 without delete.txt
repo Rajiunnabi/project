@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draggable and Resizable Images on Canvas</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        canvas {
+            border: 1px solid #000;
+            background: transparent;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="imageLoader" accept="image/*">
+    <canvas id="canvas" width="600" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const imageLoader = document.getElementById('imageLoader');
+        const images = [];
+
+        canvas.width = 600; // Set canvas width to 600
+        canvas.height = 400; // Set canvas height to 400
+
+        class DraggableImage {
+            constructor(img, x, y) {
+                this.img = img;
+                this.x = x;
+                this.y = y;
+                this.width = img.width;
+                this.height = img.height;
+                this.aspectRatio = img.width / img.height; // Store the aspect ratio
+                this.dragging = false;
+                this.hovering = false;
+            }
+
+            draw() {
+                ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+            }
+
+            contains(mx, my) {
+                return (this.x <= mx) && (this.x + this.width >= mx) &&
+                       (this.y <= my) && (this.y + this.height >= my);
+            }
+
+            startDragging(mx, my) {
+                if (this.contains(mx, my)) {
+                    this.dragging = true;
+                    this.offsetX = mx - this.x;
+                    this.offsetY = my - this.y;
+                    return true;
+                }
+                return false;
+            }
+
+            drag(mx, my) {
+                if (this.dragging) {
+                    this.x = mx - this.offsetX;
+                    this.y = my - this.offsetY;
+                }
+            }
+
+            stopDragging() {
+                this.dragging = false;
+            }
+
+            resize(delta) {
+                const newWidth = this.width + delta;
+                const newHeight = newWidth / this.aspectRatio;
+                if (newWidth > 0 && newHeight > 0) {
+                    this.width = newWidth;
+                    this.height = newHeight;
+                }
+            }
+        }
+
+        imageLoader.addEventListener('change', handleImage, false);
+
+        function handleImage(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    images.push(new DraggableImage(img, 50, 50));
+                    draw();
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            images.forEach(img => img.draw());
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const mx = e.offsetX;
+            const my = e.offsetY;
+            images.forEach(img => {
+                if (img.startDragging(mx, my)) {
+                    canvas.addEventListener('mousemove', onMouseMove, false);
+                    canvas.addEventListener('mouseup', onMouseUp, false);
+                }
+            });
+        });
+
+        function onMouseMove(e) {
+            const mx = e.offsetX;
+            const my = e.offsetY;
+            images.forEach(img => img.drag(mx, my));
+            draw();
+        }
+
+        function onMouseUp() {
+            images.forEach(img => img.stopDragging());
+            canvas.removeEventListener('mousemove', onMouseMove, false);
+            canvas.removeEventListener('mouseup', onMouseUp, false);
+        }
+
+        canvas.addEventListener('wheel', (e) => {
+            const mx = e.offsetX;
+            const my = e.offsetY;
+            images.forEach(img => {
+                if (img.contains(mx, my)) {
+                    const delta = e.deltaY > 0 ? -10 : 10;
+                    img.resize(delta);
+                    draw();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

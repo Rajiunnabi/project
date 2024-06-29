@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./img.css" />
+</head>
+<body>
+    <div class="image" style="align-items: center; justify-content: center; position:relative; display:flex; top:18vh;">
+        <img src="4.png" id="propic">
+    </div>
+    <div class="browse">
+        <label for="input-file">Update image</label>
+        <input type="file" accept="image/png, image/jpg, image/jpeg" id="input-file">
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script>
+        // Function to handle mouse wheel event for image resizing while maintaining aspect ratio
+        function handleMouseWheel(event) {
+            const image = document.getElementById('propic');
+            const delta = Math.max(-1, Math.min(1, (event.deltaY || -event.wheelDelta || event.detail)));
+            const scaleFactor = -0.1; // Change this value as needed
+
+            // Calculate new dimensions while maintaining aspect ratio
+            const newWidth = image.clientWidth * (1 + scaleFactor * delta);
+            const newHeight = newWidth * image.naturalHeight / image.naturalWidth;
+
+            // Update image size
+            image.style.width = `${newWidth}px`;
+            image.style.height = `${newHeight}px`;
+
+            // Prevent default scrolling behavior
+            event.preventDefault();
+        }
+
+        // Add event listener for mouse wheel event on image
+        const image = document.getElementById('propic');
+        image.addEventListener('wheel', handleMouseWheel);
+
+        $(function() {
+            $(".image img").draggable({ containment: ".image" });
+        });
+
+        document.getElementById('input-file').addEventListener('change', function() {
+            let input = this;
+            if (input.files && input.files[0]) {
+                let file = input.files[0];
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let img = new Image();
+                    img.onload = function() {
+                        const maxWidth = 220; // Change this value to the desired maximum width
+                        const maxHeight = 220; // Change this value to the desired maximum height
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Calculate new dimensions while maintaining aspect ratio
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height *= maxWidth / width;
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width *= maxHeight / height;
+                                height = maxHeight;
+                            }
+                        }
+
+                        let canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        let ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Reset image size styles and set the new image source
+                        const propic = document.getElementById('propic');
+                        propic.style.width = `${width}px`;
+                        propic.style.height = `${height}px`;
+                        propic.src = canvas.toDataURL('image/png');
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
