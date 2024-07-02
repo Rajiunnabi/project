@@ -4,18 +4,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrintCraft</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./css/nav.css">
+    <link rel="stylesheet" href="./css/common.css">
 </head>
 <body>
     <div class="hero">
         <nav>
             <img src="image/bg2.png" class="logo">
-            <ul>
-                <li><a href="#">Features</a></li>
-                <li><a href="#">How it Works</a></li>
-                <li><a href="#">Learn More</a></li>
-            </ul>
+            <div class="navbox">
+                <ul>
+                    <li><a href="Features.html">Features</a></li>
+                    <li><a href="How_it_works.html">How it works</a></li>
+                    <li><a href="About_us.html">About us</a></li>
+                </ul>
+            </div>
             <div>
-                <a href="login.php" class="Login-btn">Log in</a>
+                <a href="login.php" class="Login-btn">Log--in</a>
             </div>
         </nav>
         <div class="content">

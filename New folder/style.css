@@ -7,49 +7,6 @@
     75% { transform: rotate(-2deg); }
     100% { transform: rotate(0deg); }
 }
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-}
-body{
-    background: #081b29;
-}
-.hero {
-    width: 100%;
-    min-height: 100vh;
-    background-position: center;
-    background-size: cover;
-    padding: 10px 10%;
-    overflow: hidden;
-    position: relative;
-}
-
-nav {
-    padding: 10px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.logo {
-    width: 160px;
-}
-
-nav ul li {
-    display: inline-block;
-    list-style: none;
-    margin: 10px 15px;
-    color: rgb(204, 131, 131);
-}
-
-nav ul li a {
-    text-decoration: none;
-    color: rgb(180, 232, 253);
-    font-weight: 400;
-    font-size: medium;
-}
 
 .Login-btn {
     display: inline-block;
@@ -151,3 +108,5 @@ nav ul li a {
         transform: perspective(1000px) rotateY(360deg);
     }
 }
+
+

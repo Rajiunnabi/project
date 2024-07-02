@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Draggable, Resizable, and Rotatable Images on Canvas</title>
+    <title>Draggable and Resizable Images on Canvas</title>
 	
     <style>
         body {
@@ -18,11 +18,11 @@
         canvas {	
             border: 1px solid #000;
             background: transparent;
-            width: 30vh; /* Adjusted canvas width */
-            height: 50vh; /* Adjusted canvas height */
+            width: 195px; /* Adjusted canvas width */
+            height: 295px; /* Adjusted canvas height */
             z-index: 4;
             position: absolute;
-            left: 32.8vh;
+            left: 31.3vh;
             top: 25vh;
 			border: 1px dashed;
         }
@@ -83,9 +83,14 @@
 		<input type="file" id="imageLoader" accept="image/*" class="hehe">
 	</div>
     
-	<div class ="product" style="top:1vh; left:2vh; position:absolute; box-shadow: 0 0 2em rgba(0,0,0,0.2); border-radius: 1em; overflow:hidden; width:45%; height:93%;">    <canvas id="canvas" width="250" height="350"></canvas>
+	<div class ="product" style="top:1vh; left:2vh; position:absolute; box-shadow: 0 0 2em rgba(0,0,0,0.2); border-radius: 1em; overflow:hidden; width:35em;">
+        <canvas id="canvas" width="250" height="350"></canvas>
 		<img src="p1.png" class="img1" style="width:100%; z-index:0; "/>
         <img src ="p4.png" class="img2" style="position:absolute; top: 0; left:0; width:100%; z-index: 2;"/>
+        <!--<div class="image" style="left:195px; align-items: center; justify-content: center; position:absolute; display:flex; top:25vh; z-index: 2;">
+            <img src="4.png" id="propic">
+        </div>-->
+
         <div class="color"></div>
 	</div>
 	
@@ -122,15 +127,10 @@
                 this.dragging = false;
                 this.offsetX = 0;
                 this.offsetY = 0;
-                this.rotation = 0; // Initial rotation angle in radians
             }
 
             draw() {
-                ctx.save();
-                ctx.translate(this.x + this.width / 2, this.y + this.height / 2); // Move to center of the image
-                ctx.rotate(this.rotation); // Rotate the image
-                ctx.drawImage(this.img, -this.width / 2, -this.height / 2, this.width, this.height);
-                ctx.restore();
+                ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
                 if (this === selectedImage) {
                     ctx.strokeStyle = 'red';
                     ctx.lineWidth = 2;
@@ -139,14 +139,8 @@
             }
 
             contains(mx, my) {
-                // Account for rotation when checking if point is inside image
-                ctx.save();
-                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-                ctx.rotate(this.rotation);
-                ctx.translate(-this.width / 2, -this.height / 2);
-                const isContained = (mx >= this.x && mx <= this.x + this.width && my >= this.y && my <= this.y + this.height);
-                ctx.restore();
-                return isContained;
+                return (this.x <= mx) && (this.x + this.width >= mx) &&
+                       (this.y <= my) && (this.y + this.height >= my);
             }
 
             startDragging(mx, my) {
@@ -177,10 +171,6 @@
                     this.width = newWidth;
                     this.height = newHeight;
                 }
-            }
-
-            rotate(delta) {
-                this.rotation += delta;
             }
         }
 
@@ -248,19 +238,11 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            if (selectedImage) {
-                if (e.key === 'Delete') {
-                    const index = images.indexOf(selectedImage);
-                    if (index > -1) {
-                        images.splice(index, 1);
-                        selectedImage = null;
-                        draw();
-                    }
-                } else if (e.key === 'ArrowLeft') {
-                    selectedImage.rotate(-0.05); // Rotate left
-                    draw();
-                } else if (e.key === 'ArrowRight') {
-                    selectedImage.rotate(0.05); // Rotate right
+            if (e.key === 'Delete' && selectedImage) {
+                const index = images.indexOf(selectedImage);
+                if (index > -1) {
+                    images.splice(index, 1);
+                    selectedImage = null;
                     draw();
                 }
             }

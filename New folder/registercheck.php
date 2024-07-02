@@ -42,7 +42,7 @@
             die("Redirect failed. Please click on this link: <a href=...>");
         }
         else{
-            exit(header("Location: js tshirt/canvas3.html"));
+            exit(header("Location: customer.php"));
         }
     }else{
         echo "NOT Found, Incorrect Email or Password";
